@@ -128,9 +128,11 @@ void SortCutPoint(vector<int>& cutPoint)
 }
 
 int timer;
-int tin[400];
-int fup[400];
-bool used[400];
+//int tin[400];
+//int fup[400];
+//bool used[400];
+vector<int> tin, fup;
+vector<bool> used;
 
 void DFS(Matrix& matrix, Matrix& bridge, vector<int> & cutPoint, int v, int p = -1)
 {
@@ -153,7 +155,7 @@ void DFS(Matrix& matrix, Matrix& bridge, vector<int> & cutPoint, int v, int p = 
 				fup[v] = min(fup[v], fup[to]);
 				if (fup[to] > tin[v])
 					bridge.push_back({ v, to });
-				if ((fup[to] > tin[v]) && (p != -1))
+				if ((fup[to] >= tin[v]) && (p != -1))
 					cutPoint.push_back(v);
 				++children;
 			}
@@ -166,8 +168,11 @@ void DFS(Matrix& matrix, Matrix& bridge, vector<int> & cutPoint, int v, int p = 
 void FindBridges(Matrix& matrix, Matrix& bridge, vector<int>& cutPoint)
 {
 	timer = 0;
-	for (int i = 0; i < countOfPoint; ++i)
-		used[i] = false;
+	tin.assign(countOfPoint, 0);
+	fup.assign(countOfPoint, 0);
+	used.assign(countOfPoint, false);
+	//for (int i = 0; i < countOfPoint; ++i)
+		//used[i] = false;
 	for (int i = 0; i < countOfPoint; ++i)
 		if (!used[i])
 			DFS(matrix, bridge, cutPoint, i);
