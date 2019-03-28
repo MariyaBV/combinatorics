@@ -1,13 +1,15 @@
 #include "pch.h"
 #include "VectorProccesor.h"
-#include <iterator>
-#include <iostream>
-#include <sstream>
 #include <fstream>
+#include <iostream>
+#include <iterator>
+#include <sstream>
 
 using namespace std;
 
-void InitMatrix(Matrix & adjacencyMatrix, int countOfPoint)
+int countOfPoint;
+
+void InitMatrix(Matrix& adjacencyMatrix, int countOfPoint)
 {
 	vector<int> currentRow(countOfPoint, 0);
 
@@ -36,7 +38,7 @@ Error LoadMatrix(const char* fileName, Matrix& adjacencyMatrix, Matrix& edgeList
 	}
 
 	string line;
-	int countOfPoint, countOfEdge, restrictionOfEdge;
+	int countOfEdge, restrictionOfEdge;
 
 	if (getline(inputFile, line))
 	{
@@ -57,7 +59,7 @@ Error LoadMatrix(const char* fileName, Matrix& adjacencyMatrix, Matrix& edgeList
 	{
 		return Error::wrong—ountOfPoint;
 	}
-		
+
 	if ((countOfEdge < 0) || (countOfEdge > restrictionOfEdge))
 	{
 		return Error::wrong—ountOfEdge;
@@ -98,4 +100,75 @@ void PrintMatrix(Matrix const& matrix)
 			cout << item << " ";
 		cout << endl;
 	}
+}
+
+void PrintBridge(Matrix const& matrix)
+{
+	for (const auto& items : matrix)
+	{
+		for (const auto& item : items)
+			cout << (item + 1) << " ";
+		cout << endl;
+	}
+}
+
+void PrintCutPoint(const vector<int>& cutPoint)
+{
+	for (const auto& item : cutPoint)
+	{
+			cout << (item + 1) << " ";
+	}
+	cout << endl;
+}
+
+void SortCutPoint(vector<int>& cutPoint)
+{
+	sort(cutPoint.begin(), cutPoint.end());
+	cutPoint.erase(unique(cutPoint.begin(), cutPoint.end()), cutPoint.end());
+}
+
+int timer;
+int tin[400];
+int fup[400];
+bool used[400];
+
+void DFS(Matrix& matrix, Matrix& bridge, vector<int> & cutPoint, int v, int p = -1)
+{
+	used[v] = true;
+	tin[v] = fup[v] = timer++;
+	int children = 0;
+
+	for (size_t i = 0; i < matrix[v].size(); ++i)
+	{
+		if (matrix[v][i] == 1)
+		{
+			int to = i;
+			if (to == p)
+				continue;
+			if (used[to])
+				fup[v] = min(fup[v], tin[to]);
+			else
+			{
+				DFS(matrix, bridge, cutPoint, to, v);
+				fup[v] = min(fup[v], fup[to]);
+				if (fup[to] > tin[v])
+					bridge.push_back({ v, to });
+				if ((fup[to] > tin[v]) && (p != -1))
+					cutPoint.push_back(v);
+				++children;
+			}
+		}
+	}
+	if ((p == -1) && (children > 1))
+		cutPoint.push_back(v);
+}
+
+void FindBridges(Matrix& matrix, Matrix& bridge, vector<int>& cutPoint)
+{
+	timer = 0;
+	for (int i = 0; i < countOfPoint; ++i)
+		used[i] = false;
+	for (int i = 0; i < countOfPoint; ++i)
+		if (!used[i])
+			DFS(matrix, bridge, cutPoint, i);
 }
